@@ -38,7 +38,7 @@ class SocialNetwork:
             new_matrix[:len(self.Nodes)-1, :len(self.Nodes)-1] = self.social_matrix
             self.social_matrix = new_matrix
 
-    def get_social_neighbors(self, index = None, name = None, ID = None):
+    def get_social_neighbors(self, index = None, name =None, ID = None):
         if ID:
             raise NotImplemented("Function not yet implemented")
         elif name:
