@@ -1,14 +1,16 @@
 import numpy as np
+import SimulationEngine as Sim
 
 
 class SocialNode:
     COUNT = 0
 
-    def __init__(self, name, geo_position=(0, 0), layer=1, color="b", *args):
+    def __init__(self, name, geo_position=(0, 0), layer=1, color="b", node_id=None, *args):
         self.name = name
         self.geo_position = geo_position
         self.layer = layer
         self.color = color
+        self.node_id = node_id
         for arg in args:
             print("Argument not handled: " + arg)
 
@@ -38,12 +40,42 @@ class SocialNetwork:
             new_matrix[:len(self.Nodes)-1, :len(self.Nodes)-1] = self.social_matrix
             self.social_matrix = new_matrix
 
-    def get_social_neighbors(self, index = None, name =None, ID = None):
-        if ID:
-            raise NotImplemented("Function not yet implemented")
+    def add_social_edges(self, edge_list, weights = None):
+        if weights:
+            if len(edge_list) != weights:
+                raise Exception("The edge list and the weight list don't have the same length")
+            for i in range(len(edge_list)):
+                if edge_list[i][0] < edge_list[i][1]:
+                    self.social_matrix[edge_list[i][0], edge_list[i][1]] = weights[i]
+                else:
+                    self.social_matrix[edge_list[i][1], edge_list[i][0]] = weights[i]
+        else:
+            for i in range(len(edge_list)):
+                if edge_list[i][0] < edge_list[1][1]:
+                    self.social_matrix[edge_list[i][0], edge_list[i][1]] = 1
+                else:
+                    self.social_matrix[edge_list[i][1], edge_list[i][0]] = 1
+
+    def remove_social_edges(self, edge_list):
+        for edge in edge_list:
+            if edge[0] < edge[1]:
+                self.social_matrix[edge[0], edge[1]] = 0
+            else:
+                self.social_matrix[edge[1], edge[0]] = 0
+
+    def get_social_neighbors(self, index=None, name=None, node_id=None):
+        node_number = len(self.Nodes)
+        if node_id:
+            # TODO Check if this works
+            index = [i for i in range(node_number) if self.Nodes[i].node_id == node_id][0]
+            return [1 if (self.social_matrix[index][i] or self.social_matrix[i][index]) else 0
+                    for i in range(node_number)]
         elif name:
-            raise NotImplemented("Function not yet implemented")
+            index = [i for i in range(node_number) if self.Nodes[i].name == name][0]
+            return [1 if (self.social_matrix[index][i] or self.social_matrix[i][index]) else 0
+                    for i in range(node_number)]
         elif index:
-            raise NotImplemented("Function not yet implemented")
+            return [1 if (self.social_matrix[index][i] or self.social_matrix[i][index]) else 0
+                    for i in range(node_number)]
         else:
             return None
