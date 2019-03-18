@@ -1,5 +1,8 @@
+"""
+The idea is that all the 
+"""
+
 import numpy as np
-import SimulationEngine as Sim
 
 
 class SocialNode:
@@ -22,6 +25,7 @@ class SocialNetwork:
         self.Nodes = []
         self.couples_matrix = None
         self.social_matrix = None
+        self.coupled_nodes = []
 
     def add_node(self, new_node):
         self.Nodes.append(new_node)
@@ -63,6 +67,38 @@ class SocialNetwork:
             else:
                 self.social_matrix[edge[1], edge[0]] = 0
 
+    def add_couple_edges(self, edge_list, weights = None):
+        if weights:
+            if len(edge_list) != weights:
+                raise Exception("The edge list and the weight list don't have the same length")
+            for i in range(len(edge_list)):
+                if edge_list[i][0] < edge_list[i][1]:
+                    self.couples_matrix[edge_list[i][0], edge_list[i][1]] = weights[i]
+                else:
+                    self.couples_matrix[edge_list[i][1], edge_list[i][0]] = weights[i]
+
+                self.coupled_nodes.append(edge_list[i][0])
+                self.coupled_nodes.append(edge_list[i][1])
+        else:
+            for i in range(len(edge_list)):
+                if edge_list[i][0] < edge_list[1][1]:
+                    self.couples_matrix[edge_list[i][0], edge_list[i][1]] = 1
+                else:
+                    self.couples_matrix[edge_list[i][1], edge_list[i][0]] = 1
+
+                self.coupled_nodes.append(edge_list[i][0])
+                self.coupled_nodes.append(edge_list[i][1])
+
+    def remove_couple_edges(self, edge_list):
+        for edge in edge_list:
+            if edge[0] < edge[1]:
+                self.couples_matrix[edge[0], edge[1]] = 0
+            else:
+                self.couples_matrix[edge[1], edge[0]] = 0
+
+            self.coupled_nodes.remove(edge[0])
+            self.coupled_nodes.remove(edge[1])
+
     def get_social_neighbors(self, index=None, name=None, node_id=None):
         node_number = len(self.Nodes)
         if node_id:
@@ -79,3 +115,10 @@ class SocialNetwork:
                     for i in range(node_number)]
         else:
             return None
+
+    def add_random_couple(self):
+        available_nodes = [index for index in range(len(self.Nodes)) if index not in self.coupled_nodes]
+        first_node = available_nodes[np.random.randint(len(available_nodes))]
+        available_nodes.remove(first_node)
+        second_node = available_nodes[np.random.randint(len(available_nodes))]
+        self.add_couple_edges([(first_node, second_node)])

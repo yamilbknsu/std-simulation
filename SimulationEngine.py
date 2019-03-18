@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """
 Created on Sat Jan  5 08:44:54 2019
-
 @author: rodel
+@editor: Yamil
 """
 import numpy as np
+import SocialNetworks as SNet
 
 
 class AbstractSimulator(object):
@@ -113,6 +113,8 @@ class SexualPerson:
     countInfectious = 0
     countRecovered = 0
     countPartnerships = 0
+
+    # Constants Values
     meanInfectiousDuration = 2
     meanPartnershipDuration = 0.5
     meanInterContactTime = 1
@@ -215,13 +217,13 @@ class SexualPerson:
         print('$$$$$$$$$$$$$$$$$$$$$$$$$')
         contactee = None
         if self.partner == None:
-            contactee = SexualPerson.selectFromPopulation()
+            contactee = SexualPerson.select_from_population()
             print(
                 "I am subjectID {} and I DO NOT have partner and I was contacted by a partner with subjectID {}".format(
                     contactee.subjectID, self.subjectID))
         else:
             if Random.bernulli(SexualPerson.probabilityOfExtrapartnershipContact):
-                contactee = SexualPerson.selectFromPopulation()
+                contactee = SexualPerson.select_from_population()
                 print("I am subjectID {} and I was contacted by subjectID {} to have an AFFAIR".format(
                     contactee.subjectID, self.subjectID))
 
@@ -242,7 +244,7 @@ class SexualPerson:
     def beginPartnership(self, simulator):
         person = None
         while person == None or person == self:
-            person = SexualPerson.selectFromPopulation()
+            person = SexualPerson.select_from_population()
         self.partner = person
         # print('I am member {} and beeing selected to have a partner'.format(self.partner.subjectID))
         self.partner.beginPartnershipWith(self, simulator)
@@ -268,7 +270,7 @@ class SexualPerson:
         simulator.insert(self.partnershipMessage)
 
     @staticmethod
-    def clearPopulation():
+    def clear_population():
         SexualPerson.population = list()
         SexualPerson.countSusceptible = 0
         SexualPerson.countInfectious = 0
@@ -276,11 +278,11 @@ class SexualPerson:
         SexualPerson.countPartnerships = 0
 
     @staticmethod
-    def selectFromPopulation():
+    def select_from_population():
         return SexualPerson.population[int(len(SexualPerson.population) * np.random.rand())]
 
     @staticmethod
-    def printSummary(simulator):
+    def print_summary(simulator):
         info = {'time': '{:.2f}'.format(simulator.now()), 'susceptible': SexualPerson.countSusceptible,
                 'infectious': SexualPerson.countInfectious, 'recovered': SexualPerson.countRecovered,
                 'partnership': SexualPerson.countPartnerships}
@@ -291,7 +293,7 @@ class SexualPerson:
 
 class PrintDisplay:
     def handle(self, message):
-        SexualPerson.printSummary(message.simulator)
+        SexualPerson.print_summary(message.simulator)
 
 
 class SexualDiseaseSimulator(Simulator):
@@ -306,15 +308,19 @@ class SexualDiseaseSimulator(Simulator):
         self.initialPartnerships = initialPartnerships
         self.time = 0
 
-        SexualPerson.clearPopulation()
+        self.network = SNet.SocialNetwork("UdeC Social Network")
+
+        SexualPerson.clear_population()
 
         for i in range(self.initialSusceptible):
-            SexualPerson(SexualPerson.SUSCEPTIBLE)
+            person = SexualPerson(SexualPerson.SUSCEPTIBLE)
+            self.network.add_node(SNet.SocialNode("SexualPerson_"+person.subjectID))
         for i in range(self.initialInfectious):
             person = SexualPerson(SexualPerson.INFECTIOUS)
             person.infect(self)
+            self.network.add_node(SNet.SocialNode("SexualPerson_" + person.subjectID))
         for i in range(self.initialPartnerships):
-            person = SexualPerson.selectFromPopulation()
+            person = SexualPerson.select_from_population()
             # print('I am member {} and beeing selected to have a partner'.format(person.subjectID))
             if person.partner == None:
                 person.beginPartnership(self)
