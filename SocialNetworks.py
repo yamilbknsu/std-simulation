@@ -1,5 +1,5 @@
 """
-The idea is that all the 
+The idea is that all the
 """
 
 import numpy as np
