@@ -1,5 +1,5 @@
 """
-The idea is that all the
+The idea is that all the logic of the structre and the evolution of the social network is contained in this file
 """
 
 import numpy as np
